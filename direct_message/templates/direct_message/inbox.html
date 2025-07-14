@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="columns is-centered" style="margin-top: 20px;">
+    <div class="column is-8">
+        <div class="box">
+            <div class="columns is-gapless">
+                <!-- Left Column - Conversations -->
+                <div class="column is-4" style="border-right: 1px solid #dbdbdb;">
+                    <div class="panel-heading has-text-centered">
+    <h1 class="title is-5" style="display: inline-block; margin-right: 8px;">Direct Messages</h1>
+    {% if unread_total > 0 %}
+    <span class="tag is-danger is-rounded unread-global-count">
+        {{ unread_total }}
+    </span>
+    {% endif %}
+</div>
+                    <div class="message-list" style="overflow-y: auto; height: 70vh;">
+                        {% for conv in conversations %}
+                        <a href="{% url 'inbox' %}?active_direct={{ conv.user.username }}" 
+                           class="panel-block {% if conv.user.username == active_direct %}is-active{% endif %}">
+                            <div class="media">
+                                <div class="media-left">
+                                    <figure class="image is-32x32">
+                                       {% if conv.user.profile.picture %}
+    <img src="{{ conv.user.profile.picture.url }}" 
+         class="is-rounded" 
+         alt="{{ conv.user.username }}'s profile picture"
+         width="32" 
+         height="32" 
+         style="border-radius: 50%; border: 1px solid #e6e6e6; object-fit: cover;">
+{% else %}
+    <img src="https://ui-avatars.com/api/?name={{ conv.user.username }}&background=random&size=32" 
+         class="is-rounded" 
+         alt="Default profile picture"
+         width="32"
+         height="32"
+         style="border-radius: 50%; border: 1px solid #e6e6e6;">
+{% endif %}
+                                    </figure>
+                                </div>
+                                <div class="media-content">
+                                    <p class="subtitle is-6">
+                                        <strong>{{ conv.user.username }}</strong>
+                                        {% if conv.unread > 0 %}
+                                        <span class="tag is-primary is-rounded is-pulled-right">{{ conv.unread }}</span>
+                                      
+                                        {% endif %}
+                                    </p>
+                                    <p class="help">{{ conv.last|timesince }} ago</p>
+                                </div>
+                            </div>
+                        </a>
+                        {% empty %}
+                        <div class="panel-block">
+                            <p>No conversations yet</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Right Column - Messages -->
+                <div class="column is-8">
+                    {% if active_direct %}
+                    <div class="conversation-header panel-heading">
+                        <div class="media is-align-items-center">
+                            <div class="media-left">
+    <figure class="image is-32x32">
+        {% if directs.first %}
+            {% if directs.first.sender == request.user %}
+                {# If I sent the message, show recipient's picture #}
+                {% with other_user=directs.first.recipient %}
+                    {% if other_user.profile.picture %}
+                        <img src="{{ other_user.profile.picture.url }}" 
+                             class="is-rounded" 
+                             alt="{{ other_user.username }}'s profile picture"
+                             width="32"
+                             height="32"
+                             style="border-radius: 50%; border: 1px solid #e6e6e6; object-fit: cover;">
+                    {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ other_user.username }}&background=random&size=32" 
+                             class="is-rounded" 
+                             alt="Default profile picture"
+                             width="32"
+                             height="32"
+                             style="border-radius: 50%; border: 1px solid #e6e6e6;">
+                    {% endif %}
+                {% endwith %}
+            {% else %}
+                {# If someone else sent the message, show sender's picture #}
+                {% with other_user=directs.first.sender %}
+                    {% if other_user.profile.picture %}
+                        <img src="{{ other_user.profile.picture.url }}" 
+                             class="is-rounded" 
+                             alt="{{ other_user.username }}'s profile picture"
+                             width="32"
+                             height="32"
+                             style="border-radius: 50%; border: 1px solid #e6e6e6; object-fit: cover;">
+                    {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ other_user.username }}&background=random&size=32" 
+                             class="is-rounded" 
+                             alt="Default profile picture"
+                             width="32"
+                             height="32"
+                             style="border-radius: 50%; border: 1px solid #e6e6e6;">
+                    {% endif %}
+                {% endwith %}
+            {% endif %}
+        {% else %}
+            {# Fallback if no messages exist #}
+            <img src="https://ui-avatars.com/api/?name={{ active_direct }}&background=random&size=32" 
+                 class="is-rounded" 
+                 alt="Default profile picture"
+                 width="32"
+                 height="32"
+                 style="border-radius: 50%; border: 1px solid #e6e6e6;">
+        {% endif %}
+    </figure>
+</div>
+                            <div class="media-content">
+                                <p class="subtitle is-6">
+                                    <strong>{{ active_direct }}</strong>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="conversation-messages" style="overflow-y: auto; height: 60vh; padding: 10px;">
+                        {% for direct in directs %}
+                        <div class="message {% if direct.sender == request.user %}is-sent{% else %}is-received{% endif %}">
+                            <div class="message-content {% if direct.sender == request.user %}has-background-primary-light{% else %}has-background-light{% endif %}">
+                                {{ direct.body }}
+                            </div>
+                            <div class="message-time">
+                                <span class="help">{{ direct.date|timesince }} ago</span>
+                                {% if direct.sender == request.user %}
+                                    {% if direct.is_read %}
+                                    <span class="icon is-small has-text-info">
+                                        <i class="fas fa-check-double"></i>
+                                    </span>
+                                    {% else %}
+                                    <span class="icon is-small has-text-grey">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="conversation-compose" style="padding: 10px;">
+                        <form method="post" action="{% url 'send_direct' %}" class="field has-addons">
+                            {% csrf_token %}
+                            <input type="hidden" name="to_user" value="{{ active_direct }}">
+                            <div class="control is-expanded">
+                                <input class="input" type="text" name="body" placeholder="Type a message..." required autofocus>
+                            </div>
+                            <div class="control">
+                                <button type="submit" class="button is-primary">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                    {% else %}
+                    <div class="empty-conversation has-text-centered" style="padding: 40px;">
+                        <span class="icon is-large">
+                            <i class="fas fa-comments fa-3x"></i>
+                        </span>
+                        <h2 class="title is-4">Your Messages</h2>
+                        <p class="subtitle is-6">Select a conversation or start a new one</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Add your CSS styles here */
+.is-rounded { border-radius: 50%; overflow: hidden; }
+.message-list .panel-block { border-radius: 0; border-left: none; border-right: none; border-top: none; }
+.message-list .panel-block.is-active { background-color: #f5f5f5; }
+.message { margin-bottom: 15px; display: flex; flex-direction: column; }
+.message.is-sent { align-items: flex-end; }
+.message.is-received { align-items: flex-start; }
+.message-content { padding: 10px 15px; border-radius: 18px; max-width: 70%; word-break: break-word; }
+.message-time { font-size: 0.75rem; margin-top: 5px; color: #8e8e8e; display: flex; align-items: center; }
+.message-time .icon { margin-left: 5px; }
+  .unread-global-count {
+        position: relative;
+        top: -2px;
+    }
+/* Add scrollbar styling if needed */
+</style>
+{% endblock %}

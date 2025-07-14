@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Profile | {{request.user.username}}{% endblock title %}
+
+{% block content %}
+<section class="section pt-6">
+  <div class="container">
+    <div class="columns is-centered">
+      <div class="column is-half">
+        <div class="box has-shadow-lifted">
+          <h1 class="title has-text-centered mb-6 has-text-gradient">Edit Profile</h1>
+          
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Profile Picture Field - Fixed duplicate issue -->
+            <div class="field">
+              <label class="label has-text-weight-normal has-text-centered">Profile Picture</label>
+              <div class="has-text-centered mb-5">
+                <figure class="image is-128x128 is-inline-block">
+                  {% if profile.picture %}
+                    <img class="is-rounded has-shadow-soft" src="{{ profile.picture.url }}" alt="Current profile picture" id="profile-image">
+                  {% else %}
+                    <img class="is-rounded has-shadow-soft" src="https://ui-avatars.com/api/?name={{ profile.user.username }}&background=random&size=256" alt="Default profile picture" id="profile-image">
+                  {% endif %}
+                </figure>
+                
+                <!-- Single file input with styled button -->
+                <div class="file is-centered mt-4">
+                  <label class="file-label">
+                    <input class="file-input" type="file" name="picture" accept="image/*" id="id_picture">
+                    <span class="file-cta button is-ghost has-text-primary">
+                      <span class="file-icon">
+                        <i class="fas fa-camera-retro"></i>
+                      </span>
+                      <span class="file-label">
+                        Change photo...
+                      </span>
+                    </span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Name Fields with fixed icon positioning -->
+            <div class="field is-horizontal">
+              <div class="field-body">
+                <div class="field">
+                  <label class="label has-text-weight-normal">First Name</label>
+                  <div class="control has-icons-left">
+                    {{form.first_name}}
+                    <span class="icon is-left">
+                     
+                    </span>
+                  </div>
+                </div>
+                <div class="field">
+                  <label class="label has-text-weight-normal">Last Name</label>
+                  <div class="control has-icons-left">
+                    {{form.last_name}}
+                    <span class="icon is-left">
+                     
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Location Field with fixed icon positioning -->
+            <div class="field">
+              <label class="label has-text-weight-normal">Location</label>
+              <div class="control has-icons-left">
+                {{form.location}}
+                <span class="icon is-left">
+                 
+                </span>
+              </div>
+            </div>
+            
+            <!-- Social URL Field with fixed icon positioning -->
+            <div class="field">
+              <label class="label has-text-weight-normal">Social URL</label>
+              <div class="control has-icons-left">
+                {{form.social_url}}
+                <span class="icon is-left">
+                 
+                </span>
+              </div>
+            </div>
+            
+            <!-- Profile Info Field -->
+            <div class="field">
+              <label class="label has-text-weight-normal">About You</label>
+              <div class="control">
+                {{form.profile_info}}
+              </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="field is-grouped is-grouped-centered mt-6">
+              <div class="control">
+                <button type="submit" class="button is-primary is-outlined has-text-weight-semibold">
+                  <span class="icon">
+                    <i class="fas fa-save"></i>
+                  </span>
+                  <span>Save Changes</span>
+                </button>
+              </div>
+              <div class="control">
+                <a href="{% url 'home' %}" class="button is-light">
+                  <span class="icon">
+                    <i class="fas fa-times"></i>
+                  </span>
+                  <span>Cancel</span>
+                </a>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Custom gradient text */
+  .has-text-gradient {
+    background: linear-gradient(45deg, #48c774, #3298dc);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  /* Soft shadow for profile box */
+  .has-shadow-lifted {
+    box-shadow: 0 10px 25px -5px rgba(10, 10, 10, 0.1), 0 5px 10px -5px rgba(10, 10, 10, 0.04);
+  }
+  
+  /* Soft shadow for profile image */
+  .has-shadow-soft {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Form input styling with icon positioning fix */
+  .control.has-icons-left .input, 
+  .control.has-icons-left .textarea {
+    padding-left: 2.5em;
+  }
+  
+  .control.has-icons-left .icon.is-left {
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: #7a7a7a;
+    z-index: 4;
+  }
+  
+  input[type="text"], input[type="url"], textarea {
+    width: 100%;
+    padding: 0.75em;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+  }
+  
+  input[type="text"]:focus, 
+  input[type="url"]:focus, 
+  textarea:focus {
+    border-color: #48c774;
+    box-shadow: 0 0 0 0.125em rgba(72, 199, 116, 0.25);
+  }
+  
+  textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+  
+  /* Profile image styling */
+  .image.is-128x128 {
+    width: 128px;
+    height: 128px;
+    margin: 0 auto;
+  }
+  
+  .is-rounded {
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #f8f8f8;
+  }
+  
+  /* Label styling */
+  .label {
+    color: #4a4a4a;
+    margin-bottom: 0.5em;
+  }
+  
+  /* File upload button */
+  .file-input {
+    position: absolute;
+    left: -9999px;
+  }
+  
+  .file-cta:hover {
+    background-color: transparent !important;
+    color: #3298dc !important;
+  }
+  
+  /* Responsive adjustments */
+  @media screen and (max-width: 768px) {
+    .field.is-horizontal {
+      display: block;
+    }
+    
+    .field-body > .field:not(:last-child) {
+      margin-bottom: 1rem;
+    }
+  }
+</style>
+
+<script>
+  // Update profile image preview when new image is selected
+  document.getElementById('id_picture').onchange = function(e) {
+    if (this.files && this.files[0]) {
+      const reader = new FileReader();
+      const profileImage = document.getElementById('profile-image');
+      
+      reader.onload = function(e) {
+        profileImage.src = e.target.result;
+      }
+      
+      reader.readAsDataURL(this.files[0]);
+    }
+  };
+</script>
+{% endblock content %}

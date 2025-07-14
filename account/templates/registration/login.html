@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Login{% endblock title %}
+
+{% block content %}
+<section class="hero is-fullheight">
+  <div class="hero-body">
+    <div class="container">
+      <div class="columns is-centered">
+        <div class="column is-5-tablet is-4-desktop is-3-widescreen">
+          <div class="box has-shadow">
+            <h1 class="title has-text-centered mb-5">Login</h1>
+            
+            <form method="post" class="mb-5">
+              {% csrf_token %}
+              
+              <!-- Username Field -->
+              <div class="field">
+                <label for="{{ form.username.id_for_label }}" class="label">Username</label>
+                <div class="control has-icons-left">
+                  {{ form.username }}
+                  
+                  <span class="icon is-small is-left">
+                   
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Password Field -->
+              <div class="field">
+                <label for="{{ form.password.id_for_label }}" class="label">Password</label>
+                <div class="control has-icons-left">
+                  {{ form.password }}
+                  
+                  <span class="icon is-small is-left">
+                    
+                  </span>
+                </div>
+              </div>
+              
+              <!-- Error Messages -->
+              {% if form.errors %}
+                <div class="notification is-danger is-light">
+                  <button class="delete"></button>
+                  Username or password is incorrect
+                </div>
+              {% endif %}
+              
+              <!-- Remember Me & Forgot Password -->
+              <div class="field is-grouped is-grouped-right">
+                <div class="control">
+                  <a href="" class="is-size-7">Forgot password?</a>
+                </div>
+              </div>
+              
+              <!-- Submit Button -->
+              <div class="field">
+                <div class="control">
+                  <button type="submit" class="button is-primary is-fullwidth">
+                    <span class="icon">
+                      <i class="fas fa-sign-in-alt"></i>
+                    </span>
+                    <span>Login</span>
+                  </button>
+                </div>
+              </div>
+              
+              <input type="hidden" name="next" value="{{ next }}">
+            </form>
+            
+            <!-- Registration Link -->
+            <div class="has-text-centered">
+              <p class="is-size-6">Don't have an account? <a href="{% url 'signup' %}">Register here</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Custom styling to make form inputs match Bulma style */
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 0.5em;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    height: 2.5em;
+  }
+  
+  /* Make the login box slightly elevated */
+  .has-shadow {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  
+  /* Style the form inputs to match Bulma */
+  .control input {
+    transition: all 0.3s;
+  }
+  
+  .control input:focus {
+    border-color: #485fc7;
+    box-shadow: 0 0 0 0.125em rgba(72, 95, 199, 0.25);
+  }
+</style>
+
+<script>
+  // Close notification when X is clicked
+  document.addEventListener('DOMContentLoaded', () => {
+    (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+      $notification = $delete.parentNode;
+      $delete.addEventListener('click', () => {
+        $notification.parentNode.removeChild($notification);
+      });
+    });
+  });
+</script>
+{% endblock content %}

@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="columns is-centered" style="margin-top: 20px;">
+    <div class="column is-8">
+        <div class="box">
+            <div class="panel-heading has-text-centered">
+                <h1 class="title is-4">Notifications</h1>
+                {% if notifications.count > 0 %}
+                <span class="tag is-info is-rounded">
+                    {{ notifications.count }} new
+                </span>
+                {% endif %}
+            </div>
+
+            <div class="notification-list" style="max-height: 70vh; overflow-y: auto;">
+                {% for notification in notifications %}
+                <div class="panel-block {% if not notification.is_seen %}has-background-light{% endif %}" 
+                     style="border-left: none; border-right: none; border-top: none;">
+                    <div class="media" style="width: 100%;">
+                        <div class="media-left">
+                            <figure class="image is-48x48">
+                                {% if notification.sender.profile.picture %}
+                                <img src="{{ notification.sender.profile.picture.url }}" 
+                                     class="is-rounded" 
+                                     alt="{{ notification.sender.username }}'s profile picture">
+                                {% else %}
+                                <img src="https://ui-avatars.com/api/?name={{ notification.sender.username }}&background=random" 
+                                     class="is-rounded" 
+                                     alt="Default profile picture">
+                                {% endif %}
+                            </figure>
+                        </div>
+                        <div class="media-content">
+                            <div class="content">
+                                <p>
+                                    <strong>@{{ notification.sender.username }}</strong>
+                                    <span class="has-text-grey">
+                                    {% if notification.notification_type == 'like' %}
+                                        liked your post
+                                    {% elif notification.notification_type == 'comment' %}
+                                        commented on your post
+                                    {% elif notification.notification_type == 'follow' %}
+                                        started following you
+                                    {% endif %}
+                                    </span>
+                                    <br>
+                                    <small class="has-text-grey-light">
+                                        {{ notification.created_at|timesince }} ago
+                                    </small>
+                                </p>
+                                {% if notification.post %}
+                                <div class="notification-preview" style="margin-top: 8px;">
+                                    <p class="is-italic">
+                                        "{{ notification.text_preview }}"
+                                    </p>
+                                    {% if notification.post.image %}
+                                    <img src="{{ notification.post.image.url }}" 
+                                         style="max-height: 100px; border-radius: 4px; margin-top: 8px;">
+                                    {% endif %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="media-right">
+            <div class="field is-grouped">
+    <p class="control">
+        {% if notification.notification_type == 'like' or notification.notification_type == 'comment' %}
+            <a href="{% url 'post_details' notification.post.id %}" class="button is-small is-link">
+                View Post
+            </a>
+        {% elif notification.notification_type == 'follow' %}
+            <a href="{% url 'profile' notification.sender.username %}" class="button is-small is-info">
+                View Profile
+            </a>
+        {% endif %}
+    </p>
+    <p class="control">
+        <form method="post" action="{% url 'delete_notification' notification.id %}">
+            {% csrf_token %}
+            <button type="submit" class="button is-small is-danger is-outlined">
+                <span class="icon is-small">
+                    <i class="fas fa-trash"></i>
+                </span>
+            </button>
+        </form>
+    </p>
+</div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="panel-block">
+                    <div class="content has-text-centered" style="width: 100%;">
+                        <span class="icon is-large">
+                            <i class="fas fa-bell-slash fa-2x"></i>
+                        </span>
+                        <p class="subtitle is-5">No notifications yet</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .notification-list .panel-block {
+        transition: background-color 0.2s ease;
+    }
+    .notification-list .panel-block:hover {
+        background-color: #f5f5f5 !important;
+    }
+    .is-rounded {
+        border-radius: 50%;
+    }
+</style>
+
+<script>
+    // Mark notifications as seen when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        // You would typically make an AJAX call here to mark notifications as seen
+        // Example using fetch:
+        fetch("{% url 'mark-notifications-seen' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin'
+        });
+    });
+</script>
+{% endblock %}

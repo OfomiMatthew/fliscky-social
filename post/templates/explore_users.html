@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="columns is-centered">
+        <div class="column is-half">
+            <!-- Header -->
+            <div class="box has-background-white">
+                <h1 class="title is-4 has-text-centered">{{ title }}</h1>
+            </div>
+            
+            <!-- Users Grid -->
+            <div class="box has-background-white">
+                {% for user in page_obj %}
+                <div class="media is-align-items-center mb-5">
+                    <div class="media-left">
+                        <figure class="image is-64x64">
+                            {% if user.profile.picture %}
+                            <img src="{{ user.profile.picture.url }}" 
+                                 class="is-rounded" 
+                                 alt="{{ user.username }}'s profile picture">
+                            {% else %}
+                            <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random&size=64" 
+                                 class="is-rounded" 
+                                 alt="Default profile picture">
+                            {% endif %}
+                        </figure>
+                    </div>
+                    <div class="media-content">
+                        <a href="{% url 'profile' user.username %}" class="has-text-dark">
+                            <p class="subtitle is-5 mb-0">{{ user.username }}</p>
+                            {% if user.first_name or user.last_name %}
+                            <p class="help">{{ user.first_name }} {{ user.last_name }}</p>
+                            {% endif %}
+                        </a>
+                    </div>
+                    <div class="media-right">
+                        <form method="post" action="{% url 'follow' user.username 1 %}">
+                            {% csrf_token %}
+                            <button type="submit" class="button is-primary is-small">Follow</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <!-- Pagination -->
+                <nav class="pagination is-centered" role="navigation">
+                    {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="pagination-previous">Previous</a>
+                    {% endif %}
+                    
+                    {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="pagination-next">Next</a>
+                    {% endif %}
+                    
+                    <ul class="pagination-list">
+                        {% for num in page_obj.paginator.page_range %}
+                        <li>
+                            <a href="?page={{ num }}" 
+                               class="pagination-link {% if page_obj.number == num %}is-current{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.media {
+    border-bottom: 1px solid #f5f5f5;
+    padding-bottom: 1.5rem;
+}
+.media:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+.is-rounded {
+    border-radius: 50%;
+    overflow: hidden;
+}
+</style>
+{% endblock %}

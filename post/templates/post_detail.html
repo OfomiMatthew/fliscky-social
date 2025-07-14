@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="columns is-centered">
+    <div class="column is-three-quarters-tablet is-two-thirds-desktop">
+        <div class="card post-card">
+            <!-- Post Media Content -->
+            <div class="card-image">
+                {% for content in post.content.all %}
+                <div class="media-container">
+                    {% if content.content_type == 'video' %}
+                    <div class="video-container">
+                        <video controls class="post-media">
+                            <source src="{{ content.file.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    {% else %}
+                    <figure class="image" style="padding-top: 75%; position: relative; overflow: hidden;">
+                        <img src="{{ content.file.url }}" 
+                             alt="Post image"
+                             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
+                    </figure>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Post Content -->
+            <div class="card-content">
+                <!-- Post Meta -->
+                <div class="media">
+                    <div class="media-left">
+                        <figure class="image is-48x48">
+                           {% if post.user.profile.picture %}
+                           <img src="{{ post.user.profile.picture.url }}" 
+                                class="is-rounded" 
+                                alt="{{ post.user.username }}'s profile picture">
+                           {% else %}
+                           <img src="https://ui-avatars.com/api/?name={{ post.user.username }}&background=random&size=256" 
+                                class="is-rounded" 
+                                alt="Default profile picture">
+                           {% endif %}
+                        </figure>
+                    </div>
+                    <div class="media-content">
+                        <p class="title is-5">{{ post.user.username }}</p>
+                        <p class="subtitle is-7 has-text-grey">
+                            {{ post.date_posted|timesince }} ago
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Post Caption and Tags -->
+                <div class="content mt-4">
+                    <p class="post-caption">{{ post.caption }}</p>
+                    
+                    <div class="tags mt-4">
+                        {% for tag in post.tags_as_list %}
+                        <span class="tag is-primary is-light is-medium">{{ tag }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Like/Unlike Counters -->
+                <div class="level is-mobile mb-4">
+                    <div class="level-left">
+                        <div class="level-item has-text-centered">
+                            <div>
+                                <p class="heading">Likes</p>
+                                <p class="title is-5 has-text-success">{{ post.likes }}</p>
+                            </div>
+                        </div>
+                        <div class="level-item has-text-centered">
+                            <div>
+                                <p class="heading">Unlikes</p>
+                                <p class="title is-5 has-text-danger">{{ post.unlikes }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Post Actions -->
+                <div class="post-actions buttons is-centered">
+                    <!-- Like Button -->
+                    <form method="post" action="{% url 'like' post.user.username post.id %}" class="mb-0">
+                        {% csrf_token %}
+                        <button type="submit" class="button is-white {% if user in post.likers.all %}has-text-success{% endif %}">
+                            <span class="icon">
+                                <i class="fas fa-thumbs-up"></i>
+                            </span>
+                            <span>Like</span>
+                        </button>
+                    </form>
+                    
+                    <!-- Unlike Button -->
+                    <form method="post" action="{% url 'unlike' post.user.username post.id %}" class="mb-0">
+                        {% csrf_token %}
+                        <button type="submit" class="button is-white {% if user in post.unlikers.all %}has-text-danger{% endif %}">
+                            <span class="icon">
+                                <i class="fas fa-thumbs-down"></i>
+                            </span>
+                            <span>Unlike</span>
+                        </button>
+                    </form>
+                    
+                    <!-- Save Button -->
+                    {% if user.is_authenticated %}
+                    <form method="post" action="{% url 'favorite_post' post.id %}">
+                        {% csrf_token %}
+                        <button type="submit" class="button is-white">
+                            <span class="icon">
+                                <i class="{% if post in user.profile.favorites.all %}fas{% else %}far{% endif %} fa-bookmark"></i>
+                            </span>
+                            <span>{% if post in user.profile.favorites.all %}Saved{% else %}Save{% endif %}</span>
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Comments Section -->
+            <div class="comments-section">
+                <!-- Comment Input Form -->
+                <div class="comment-input box">
+                    <form method="post" action="{% url 'add_comment' post.user.username post.id %}">
+                        {% csrf_token %}
+                        <article class="media">
+                            <figure class="media-left">
+                                <p class="image is-48x48">
+                                    {% if request.user.profile.picture %}
+                                    <img src="{{ request.user.profile.picture.url }}" 
+                                         class="is-rounded" 
+                                         alt="{{ request.user.username }}'s profile picture">
+                                    {% else %}
+                                    <img src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=random&size=50" 
+                                         class="is-rounded" 
+                                         alt="Default profile picture">
+                                    {% endif %}
+                                </p>
+                            </figure>
+                            <div class="media-content">
+                                <div class="field">
+                                    <p class="control">
+                                        <textarea name="text" id="comment-textarea" class="textarea" 
+                                                  rows="2" placeholder="Add a comment..." required></textarea>
+                                    </p>
+                                </div>
+                                <div class="field is-grouped is-grouped-right">
+                                    <p class="control">
+                                        <button type="submit" class="button is-primary is-small">
+                                            Post Comment
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
+                        </article>
+                    </form>
+                </div>
+                
+                <!-- Comments List -->
+                <div class="comment-list">
+                    {% for comment in post.comment_set.all|dictsortreversed:"date" %}
+                    <article class="media comment-item box" style="border-radius: 6px; margin-top: 1rem;">
+                        <figure class="media-left">
+                            <p class="image is-48x48">
+                               <img class="is-rounded" 
+                                    src="{% if comment.user.profile.picture %}{{ comment.user.profile.picture.url }}{% else %}https://ui-avatars.com/api/?name={{ comment.user.username }}&background=random&size=50{% endif %}" 
+                                    alt="{{ comment.user.username }}'s profile image">
+                            </p>
+                        </figure>
+                        <div class="media-content">
+                            <div class="content">
+                                <div class="is-flex is-justify-content-space-between is-align-items-center">
+                                    <div>
+                                        <strong>{{ comment.user.username }}</strong> 
+                                        <small class="has-text-grey ml-2">{{ comment.date|timesince }} ago</small>
+                                    </div>
+                                    {% if comment.user == request.user %}
+                                    <form method="post" action="{% url 'delete_comment' comment.id %}" class="ml-3">
+                                        {% csrf_token %}
+                                        <button type="submit" class="button is-small is-text has-text-danger">
+                                            <span class="icon">
+                                                <i class="fas fa-trash"></i>
+                                            </span>
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                                <p class="comment-text mt-2">{{ comment.text }}</p>
+                            </div>
+                        </div>
+                    </article>
+                    {% empty %}
+                    <div class="has-text-centered has-text-grey py-5">
+                        <span class="icon is-large">
+                            <i class="far fa-comment-dots fa-2x"></i>
+                        </span>
+                        <p class="mt-2">No comments yet. Be the first to comment!</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.post-card {
+    margin-top: 1.5rem;
+    box-shadow: 0 2px 3px rgba(10, 10, 10, 0.1);
+}
+
+.media-container {
+    background-color: #f5f5f5;
+    position: relative;
+}
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+}
+
+.video-container video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.post-caption {
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+.post-actions {
+    border-top: 1px solid #f0f0f0;
+    padding-top: 1rem;
+    margin-top: 1rem;
+}
+
+.post-actions .button {
+    margin: 0 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.post-actions .button:hover {
+    background-color: #f5f5f5;
+}
+
+.post-actions form {
+    display: inline;
+}
+
+.has-text-success {
+    color: #48c774 !important;
+}
+
+.has-text-danger {
+    color: #ff3860 !important;
+}
+
+.has-text-info {
+    color: #3273dc !important;
+}
+
+.level {
+    margin-bottom: 1rem !important;
+}
+
+.level-item .title {
+    margin-bottom: 0.25rem !important;
+}
+
+.level-item .heading {
+    font-size: 0.75rem;
+    color: #7a7a7a;
+}
+
+.comment-input {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f0f0f0;
+}
+
+.comment-list {
+    margin-top: 1rem;
+}
+
+.comment-item {
+    margin-bottom: 0.75rem;
+}
+
+.comment-item:not(:last-child) {
+    border-bottom: 1px solid #f5f5f5;
+    padding-bottom: 0.75rem;
+}
+
+.comment-header {
+    margin-bottom: 0.25rem;
+}
+
+.comment-text {
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.textarea {
+    resize: none;
+    min-height: 2.5em;
+    max-height: 10em;
+}
+
+.comment-input {
+    margin-bottom: 1.5rem;
+    background-color: #fafafa;
+}
+
+.comment-textarea {
+    min-height: 80px;
+    transition: height 0.2s ease;
+}
+
+.comment-item {
+    border: 1px solid #f0f0f0;
+    padding: 1rem;
+}
+
+.comment-item:hover {
+    background-color: #fafafa;
+}
+
+.comment-actions {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.comment-item:hover .comment-actions {
+    opacity: 1;
+}
+</style>
+{% endblock %}

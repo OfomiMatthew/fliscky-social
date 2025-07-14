@@ -1,0 +1,331 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+<div class="stories-container">
+    <div class="stories-scroll">
+    {% regroup stories by following as user_stories %}
+    
+    {% if user_stories %}
+        {% for user in user_stories %}
+            <!-- Each followed user's story circle -->
+            <div class="story-circle">
+                <a href="{% url 'view_story' user.grouper.id %}">
+                    <div class="story-avatar">
+                        <figure class="image is-64x64">
+                            {% if user.grouper.profile.picture %}
+                                <img src="{{ user.grouper.profile.picture.url }}" 
+                                     class="is-rounded" 
+                                     alt="{{ user.grouper.username }}">
+                            {% else %}
+                                <img src="https://ui-avatars.com/api/?name={{ user.grouper.username }}&background=random" 
+                                     class="is-rounded" 
+                                     alt="{{ user.grouper.username }}">
+                            {% endif %}
+                            {% if user.list.0.story.all %}
+                                <span class="story-badge"></span>
+                            {% endif %}
+                        </figure>
+                    </div>
+                    <span class="story-username">{{ user.grouper.username }}</span>
+                </a>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-stories">
+            <p>No stories available. Follow users to see their stories.</p>
+        </div>
+    {% endif %}
+</div>
+</div>
+    
+<div class="columns is-gapless">
+    <!-- Main Feed Column -->
+    <div class="column is-two-thirds">
+        <div class="feed-column">
+            {% if post_items %}
+                {% for post in post_items %}
+                <div class="post-box">
+                    <!-- Post header -->
+                    <a href="{% url 'profile' post.user.username %}" style="display: block; text-decoration: none; color: inherit;">
+                        <div class="media" style="padding: 12px 16px;">
+                            <div class="media-left">
+                                <figure class="image is-32x32">
+                                    {% if post.user.profile.picture %}
+                                    <img src="{{ post.user.profile.picture.url }}" 
+                                         class="is-rounded" 
+                                         alt="{{ post.user.username }}'s profile picture">
+                                    {% else %}
+                                    <img src="https://ui-avatars.com/api/?name={{ post.user.username }}&background=random&size=256" 
+                                         class="is-rounded" 
+                                         alt="Default profile picture">
+                                    {% endif %}
+                                </figure>
+                            </div>
+                            <div class="media-content">
+                                <p class="subtitle is-6"><strong>{{ post.user.username }}</strong></p>
+                            </div>
+                        </div>
+                    </a>
+                    
+                    <!-- Post image -->
+                    <div class="post-image">
+                        <a href="{% url 'post_details' post.id %}">
+                          <div class="card-image">
+                {% for content in post.content.all %}
+                <div class="media-container">
+                    {% if content.content_type == 'video' %}
+                    <div class="video-container">
+                        <video controls class="post-media">
+                            <source src="{{ content.file.url }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    {% else %}
+                    <figure class="image" style="padding-top: 75%; position: relative; overflow: hidden;">
+                        <img src="{{ content.file.url }}" 
+                             alt="Post image"
+                             style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain;">
+                    </figure>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+                        </a>
+                    </div>
+                    
+                    <!-- Post actions -->
+                    <div style="padding: 8px 16px;">
+                        <div class="content" style="padding: 0 8px;">
+                            <p><strong>{{ post.likes }} like{{ post.likes|pluralize }}</strong></p>
+                            <p>
+                                <a href="{% url 'profile' post.user.username %}" style="text-decoration: none; color: inherit;">
+                                    <strong>{{ post.user.username }}</strong>
+                                </a> 
+                                <br>{{ post.caption }}
+                            </p>
+                            {% if post.tags.all %}
+                            <div class="tags">
+                                {% for tag in post.tags.all %}
+                                <a href="{% url 'tags' tag.slug %}">
+                                    <span class="tag">#{{ tag.title }}</span>
+                                </a>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            <p class="has-text-grey">{{ post.date_posted|timesince }} ago</p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="box">
+                    <p class="has-text-centered">
+                        {% if user.is_authenticated %}
+                            No posts to show. Follow some users to see their posts!
+                        {% else %}
+                            Please login to see posts.
+                        {% endif %}
+                    </p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Suggested Users Column (Fixed Position) -->
+    <div class="column is-one-third" style="padding: 20px; position: sticky; top: 20px; align-self: flex-start;">
+        <div class="suggested-users-box">
+            <!-- Current User Profile -->
+            <div class="media is-align-items-center mb-5">
+                <div class="media-left">
+                    <figure class="image is-48x48">
+                        {% if request.user.profile.picture %}
+                        <img src="{{ request.user.profile.picture.url }}" 
+                             class="is-rounded" 
+                             alt="{{ request.user.username }}'s profile picture">
+                        {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=random&size=256" 
+                             class="is-rounded" 
+                             alt="Default profile picture">
+                        {% endif %}
+                    </figure>
+                </div>
+                <div class="media-content">
+                    <a href="{% url 'profile' request.user.username %}" style="text-decoration: none; color: inherit;">
+                        <p class="subtitle is-6 mb-0"><strong>{{ request.user.username }}</strong></p>
+                        <p class="help">{{ request.user.get_full_name|default:"Your profile" }}</p>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Suggested Users Header -->
+            <div class="level is-mobile mb-4">
+                <div class="level-left">
+                    <p class="has-text-grey"><strong>Suggestions For You</strong></p>
+                </div>
+                <div class="level-right">
+                    <a href="{% url 'explore_users' %}" class="is-size-7">See All</a>
+                </div>
+            </div>
+
+            <!-- Suggested Users List -->
+            {% for suggested_user in suggested_users %}
+            <div class="media is-align-items-center mb-4">
+                <div class="media-left">
+                    <figure class="image is-32x32">
+                        {% if suggested_user.profile.picture %}
+                        <img src="{{ suggested_user.profile.picture.url }}" 
+                             class="is-rounded" 
+                             alt="{{ suggested_user.username }}'s profile picture">
+                        {% else %}
+                        <img src="https://ui-avatars.com/api/?name={{ suggested_user.username }}&background=random&size=256" 
+                             class="is-rounded" 
+                             alt="Default profile picture">
+                        {% endif %}
+                    </figure>
+                </div>
+                <div class="media-content">
+                    <a href="{% url 'profile' suggested_user.username %}" style="text-decoration: none; color: inherit;">
+                        <p class="subtitle is-6 mb-0"><strong>{{ suggested_user.username }}</strong></p>
+                        <p class="help is-size-7">Suggested for you</p>
+                    </a>
+                </div>
+                <div class="media-right">
+                    <form method="post" action="{% url 'follow' suggested_user.username 1 %}">
+                        {% csrf_token %}
+                        <button type="submit" class="button is-link is-small is-outlined">Follow</button>
+                    </form>
+                </div>
+            </div>
+            {% empty %}
+            <p class="has-text-grey is-size-7">No suggestions available</p>
+            {% endfor %}
+
+            <!-- Footer Links -->
+            <div class="mt-6">
+                <p class="is-size-7 has-text-grey">
+                    © {% now "Y" %} FLICKSY 
+                   
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Main layout */
+.columns {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Post box styling */
+.post-box {
+    background: white;
+    border: 1px solid #dbdbdb;
+    border-radius: 3px;
+    margin-bottom: 24px;
+}
+
+/* Suggested users box */
+.suggested-users-box {
+    background: white;
+    padding: 16px;
+    border: 1px solid #dbdbdb;
+    border-radius: 3px;
+    position: sticky;
+    top: 84px;
+}
+
+/* Profile pictures */
+.is-rounded {
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+/* Hover effects */
+a:hover .media-content p {
+    opacity: 0.8;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    .column.is-one-third {
+        display: none;
+    }
+    .column.is-two-thirds {
+        width: 100%;
+    }
+}
+
+
+.stories-container {
+    background: white;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.stories-scroll {
+    display: flex;
+    overflow-x: auto;
+    gap: 1.5rem;
+    padding: 0.5rem 0;
+    scrollbar-width: none; /* Firefox */
+}
+
+.stories-scroll::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.story-circle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 80px;
+}
+
+.story-avatar {
+    position: relative;
+    padding: 2px;
+    border-radius: 50%;
+    background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+}
+
+.story-avatar .image {
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+.story-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    width: 12px;
+    height: 12px;
+    background: #3897f0;
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+.story-username {
+    font-size: 0.8rem;
+    margin-top: 0.3rem;
+    text-align: center;
+    color: #262626;
+    display: block;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.no-stories {
+    padding: 1rem;
+    text-align: center;
+    color: #8e8e8e;
+}
+</style>
+{% endblock %}

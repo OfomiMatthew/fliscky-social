@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="max-w-md mx-auto text-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="mb-8">
+      
+    </div>
+    <h2 class="text-2xl font-bold text-gray-900 mb-4">
+        No Stories Available
+    </h2>
+    <p class="text-gray-600 mb-6">
+        @{{ username }} hasn't posted any stories in the last 24 hours.
+    </p>
+    <div class="mt-6">
+        <a href="{% url 'home' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+         
+            Back to Home
+        </a>
+    </div>
+</div>
+{% endblock %}

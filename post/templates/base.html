@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}Instagram Clone{% endblock %}</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.3/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Main content area */
+        .main-content-wrapper {
+            margin-left: 275px;
+            transition: all 0.3s ease;
+            min-height: 100vh;
+            background-color: #fafafa;
+        }
+
+        /* Stories */
+        .stories-container {
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 10px 0;
+            margin-bottom: 20px;
+        }
+        .story-circle {
+            display: inline-block;
+            margin: 0 8px;
+            text-align: center;
+            width: 66px;
+        }
+        .story-avatar {
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            padding: 2px;
+            background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+        }
+        .story-avatar img {
+            border: 2px solid white;
+            border-radius: 50%;
+        }
+        .post-image {
+            width: 100%;
+            height: auto;
+        }
+        .suggestions {
+            margin-top: 20px;
+        }
+        .suggestion-item {
+            margin-bottom: 10px;
+        }
+        
+        /* Layout improvements */
+        .main-content {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .feed-column {
+            flex: 0 0 600px;
+            max-width: 600px;
+        }
+        
+        .sidebar-column {
+            flex: 0 0 320px;
+            position: sticky;
+            top: 80px;
+            height: fit-content;
+            padding-left: 20px;
+        }
+        
+        .post-box {
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e6e6e6;
+        }
+
+        /* Mobile bottom nav */
+        .mobile-bottom-nav {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            z-index: 40;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            padding: 10px 0;
+        }
+
+        .mobile-bottom-nav .nav-item {
+            flex: 1;
+            justify-content: center;
+            flex-direction: column;
+            padding: 5px;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 1024px) {
+            .main-content-wrapper {
+                margin-left: 0;
+                padding-bottom: 60px; /* Space for mobile nav */
+            }
+
+            .mobile-bottom-nav {
+                display: flex;
+            }
+
+            .sidebar-column {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: 10px;
+            }
+            
+            .feed-column {
+                flex: 1;
+                max-width: 100%;
+            }
+
+            .story-circle {
+                margin: 0 5px;
+                width: 60px;
+            }
+            .story-avatar {
+                width: 60px;
+                height: 60px;
+            }
+        }
+
+
+        /* Notification Styles (can be placed in head or separate CSS file) */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 600px;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.notification {
+    width: 100%;
+    position: relative;
+    padding-right: 40px; /* Space for close button */
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+}
+
+.notification .delete {
+    position: absolute;
+    right: 12px;
+    top: 12px;
+}
+
+@media screen and (max-width: 768px) {
+    .notification-container {
+        padding: 0 15px;
+        max-width: 100%;
+    }
+}
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Notification Container (place near top of body) -->
+<div class="notification-container" id="notificationContainer">
+    {% if messages %}
+        {% for message in messages %}
+        <div class="notification is-{{ message.tags }}">
+            <button class="delete" onclick="this.parentElement.remove()"></button>
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+</div>
+    <!-- Your existing side navigation here -->
+    {% include 'nav.html' %}
+
+    <!-- Main Content Wrapper -->
+    <div class="main-content-wrapper">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="mobile-bottom-nav is-hidden-desktop">
+        <a href="{% url 'home' %}" class="nav-item">
+            <i class="fas fa-home fa-lg"></i>
+            <small>Home</small>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-search fa-lg"></i>
+            <small>Search</small>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-plus-square fa-lg"></i>
+            <small>Create</small>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-heart fa-lg"></i>
+            <small>Activity</small>
+        </a>
+        <a href="#" class="nav-item">
+            <i class="fas fa-user fa-lg"></i>
+            <small>Profile</small>
+        </a>
+    </nav>
+
+    {% block extra_js %}{% endblock %}
+
+
+
+
+
+
+
+<!-- Notification Script -->
+<script>
+// Auto-dismiss notifications after 5 seconds
+document.addEventListener('DOMContentLoaded', () => {
+    const notifications = document.querySelectorAll('.notification');
+    
+    notifications.forEach(notification => {
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            setTimeout(() => notification.remove(), 300);
+        }, 5000);
+    });
+    
+    // Remove container if empty
+    const container = document.getElementById('notificationContainer');
+    if (container && container.children.length === 0) {
+        container.remove();
+    }
+});
+</script>
+    
+</body>
+</html>

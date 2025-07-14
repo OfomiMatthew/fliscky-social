@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up{% endblock title %}
+
+{% block content %}
+<section class="hero is-fullheight">
+  <div class="hero-body">
+    <div class="container" style="padding-top: 2rem;">  <!-- Added padding-top here -->
+      <div class="columns is-centered">
+        <div class="column is-6-tablet is-5-desktop is-4-widescreen">
+          <div class="box has-shadow">
+            <h1 class="title has-text-centered mb-5">Create Account</h1>
+            
+            <form method="post">
+              {% csrf_token %}
+              
+              <!-- Username Field -->
+              <div class="field">
+                <label for="{{ form.username.id_for_label }}" class="label">Username</label>
+                <div class="control has-icons-left">
+                  {{ form.username }}
+                  <span class="icon is-small is-left">
+                    <i class="fas fa-user"></i>
+                  </span>
+                </div>
+                <p class="help">6-30 characters. No @, +, or - symbols</p>
+                {% if form.username.errors %}
+                  <p class="help is-danger">
+                    {% for error in form.username.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </p>
+                {% endif %}
+              </div>
+              
+              <!-- Email Field -->
+              <div class="field">
+                <label for="{{ form.email.id_for_label }}" class="label">Email</label>
+                <div class="control has-icons-left">
+                  {{ form.email }}
+                  <span class="icon is-small is-left">
+                    <i class="fas fa-envelope"></i>
+                  </span>
+                </div>
+                {% if form.email.errors %}
+                  <p class="help is-danger">
+                    {% for error in form.email.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </p>
+                {% endif %}
+              </div>
+              
+              <!-- Name Fields -->
+              <div class="field is-horizontal">
+                <div class="field-body">
+                  <div class="field">
+                    <label for="{{ form.first_name.id_for_label }}" class="label">First Name</label>
+                    <div class="control">
+                      {{ form.first_name }}
+                    </div>
+                  </div>
+                  <div class="field">
+                    <label for="{{ form.last_name.id_for_label }}" class="label">Last Name</label>
+                    <div class="control">
+                      {{ form.last_name }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Password Field -->
+              <div class="field">
+                <label for="{{ form.password.id_for_label }}" class="label">Password</label>
+                <div class="control has-icons-left">
+                  {{ form.password }}
+                  <span class="icon is-small is-left">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                </div>
+                <p class="help">Minimum 6 characters</p>
+              </div>
+              
+              <!-- Confirm Password Field -->
+              <div class="field">
+                <label for="{{ form.confirm_password.id_for_label }}" class="label">Confirm Password</label>
+                <div class="control has-icons-left">
+                  {{ form.confirm_password }}
+                  <span class="icon is-small is-left">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                </div>
+                {% if form.password.errors %}
+                  <p class="help is-danger">
+                    {% for error in form.password.errors %}
+                      {{ error }}
+                    {% endfor %}
+                  </p>
+                {% endif %}
+              </div>
+              
+              <!-- Form Errors -->
+              {% if form.non_field_errors %}
+                <div class="notification is-danger is-light">
+                  <button class="delete"></button>
+                  {% for error in form.non_field_errors %}
+                    {{ error }}
+                  {% endfor %}
+                </div>
+              {% endif %}
+              
+              <!-- Submit Button -->
+              <div class="field mt-5">
+                <div class="control">
+                  <button type="submit" class="button is-primary is-fullwidth is-medium">
+                    <span class="icon">
+                      <i class="fas fa-user-plus"></i>
+                    </span>
+                    <span>Register</span>
+                  </button>
+                </div>
+              </div>
+              
+              <!-- Login Link -->
+              <div class="has-text-centered mt-4">
+                <p class="is-size-6">Already have an account? <a href="{% url 'login' %}">Login here</a></p>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  /* Updated styling for form inputs with icons */
+  .control.has-icons-left input {
+    padding-left: 2.5em; /* Add padding to prevent text overlap */
+  }
+
+  /* Position the icons properly */
+  .control.has-icons-left .icon {
+    pointer-events: none; /* Make sure clicks go through to input */
+    z-index: 4; /* Keep icon above input but behind text */
+  }
+
+  /* Custom styling to make form inputs match Bulma style */
+  input[type="text"], 
+  input[type="email"], 
+  input[type="password"] {
+    width: 100%;
+    padding: 0.5em;
+    border: 1px solid #dbdbdb;
+    border-radius: 4px;
+    height: 2.5em;
+    position: relative; /* Ensure proper stacking context */
+  }
+  
+  /* Make the box slightly elevated */
+  .has-shadow {
+    box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+  }
+  
+  /* Style the form inputs to match Bulma */
+  .control input {
+    transition: all 0.3s;
+  }
+  
+  .control input:focus {
+    border-color: #485fc7;
+    box-shadow: 0 0 0 0.125em rgba(72, 95, 199, 0.25);
+  }
+  
+  /* Help text styling */
+  .help {
+    font-size: 0.8rem;
+  }
+
+  /* Ensure proper spacing from the top */
+  .hero.is-fullheight {
+    padding-top: 1rem; /* Added to create space below navbar */
+  }
+</style>
+
+<script>
+  // Close notification when X is clicked
+  document.addEventListener('DOMContentLoaded', () => {
+    (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+      $notification = $delete.parentNode;
+      $delete.addEventListener('click', () => {
+        $notification.parentNode.removeChild($notification);
+      });
+    });
+  });
+</script>
+{% endblock content %}

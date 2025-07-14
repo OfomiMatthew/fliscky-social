@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="columns is-centered" style="margin-top: 20px;">
+    <div class="column is-6">
+        <div class="box">
+            <!-- Search Form -->
+            <form method="get" action="{% url 'search_users' %}">
+                <div class="field has-addons">
+                    <div class="control is-expanded">
+                        <input class="input" 
+                               type="text" 
+                               name="q" 
+                               placeholder="Search by username or name..." 
+                               value="{{ request.GET.q }}">
+                    </div>
+                    <div class="control">
+                        <button type="submit" class="button is-primary">
+                            <span class="icon">
+                                <i class="fas fa-search"></i>
+                            </span>
+                            <span>Search</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Search Results -->
+            {% if request.GET.q %}
+                <div class="search-results" style="margin-top: 20px;">
+                    {% if users %}
+                        <div class="panel">
+                            <p class="panel-heading">
+                                Found {{ users.paginator.count }} user{{ users.paginator.count|pluralize }}
+                            </p>
+                            {% for user in users %}
+                            <div class="panel-block">
+                                <div class="media" style="width: 100%;">
+                                    <div class="media-left">
+                                        <figure class="image is-48x48">
+                                            <a href="{% url 'profile' user.username %}">
+                                            {% if user.profile.picture %}
+                                            <img src="{{ user.profile.picture.url }}" 
+                                                 class="is-rounded" 
+                                                 alt="{{ user.username }}'s profile picture">
+                                            {% else %}
+                                            <img src="https://ui-avatars.com/api/?name={{ user.username }}&background=random" 
+                                                 class="is-rounded" 
+                                                 alt="Default profile picture">
+                                            {% endif %}
+                                            </a>
+                                        </figure>
+                                    </div>
+                                    <div class="media-content">
+                                        <p class="title is-5">
+                                            {{ user.username }}
+                                            {% if user.get_full_name %}
+                                            <span class="subtitle is-6">({{ user.get_full_name }})</span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                    <div class="media-right">
+                                        <a href="{% url 'inbox' %}?active_direct={{ user.username }}" 
+                                           class="button is-small is-primary">
+                                            Message
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Pagination -->
+                        {% if users.has_other_pages %}
+                        <nav class="pagination is-centered" role="navigation" aria-label="pagination">
+                            {% if users.has_previous %}
+                            <a href="?q={{ request.GET.q }}&page={{ users.previous_page_number }}" 
+                               class="pagination-previous">Previous</a>
+                            {% endif %}
+                            
+                            {% if users.has_next %}
+                            <a href="?q={{ request.GET.q }}&page={{ users.next_page_number }}" 
+                               class="pagination-next">Next</a>
+                            {% endif %}
+
+                            <ul class="pagination-list">
+                                {% for i in users.paginator.page_range %}
+                                <li>
+                                    <a href="?q={{ request.GET.q }}&page={{ i }}" 
+                                       class="pagination-link {% if users.number == i %}is-current{% endif %}">
+                                        {{ i }}
+                                    </a>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+                    {% else %}
+                        <article class="message is-info">
+                            <div class="message-body">
+                                No users found matching "{{ request.GET.q }}"
+                            </div>
+                        </article>
+                    {% endif %}
+                </div>
+            {% else %}
+                <article class="message is-light">
+                    <div class="message-body">
+                        Enter a username or name to search for users
+                    </div>
+                </article>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .search-results {
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    .panel-block {
+        border-left: none;
+        border-right: none;
+    }
+    .panel-block:last-child {
+        border-bottom: none;
+    }
+    .is-rounded {
+        border-radius: 50%;
+    }
+</style>
+{% endblock %}

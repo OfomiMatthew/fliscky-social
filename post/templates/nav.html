@@ -1,0 +1,334 @@
+<!-- Side Navigation Bar -->
+<nav class="side-nav" role="navigation" aria-label="main navigation">
+    <style>
+        /* Side Navigation Styles */
+        .side-nav {
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 275px;
+            background: white;
+            border-right: 1px solid #e6e6e6;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            z-index: 100;
+            transition: all 0.3s ease;
+        }
+
+        .nav-logo {
+            padding: 0 12px 25px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .nav-logo .icon {
+            font-size: 2.2rem;
+            color: #262626;
+        }
+
+        .nav-menu {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin: 4px 0;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item:hover {
+            background-color: #f8f8f8;
+        }
+
+        .nav-item.active {
+            font-weight: 600;
+        }
+
+        .nav-item .icon {
+            width: 24px;
+            height: 24px;
+            font-size: 1.5rem;
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-item .nav-label {
+            font-size: 16px;
+        }
+
+        .nav-profile {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-top: auto;
+            position: relative;
+        }
+
+        .nav-profile-img {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 16px;
+            border: 1px solid #e6e6e6;
+        }
+
+        .nav-profile-dropdown {
+            position: absolute;
+            left: 20px;
+            bottom: 70px;
+            width: 230px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+            padding: 8px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.2s ease;
+            z-index: 101;
+        }
+
+        .nav-profile:hover .nav-profile-dropdown {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f8f8;
+        }
+
+        .dropdown-item .icon {
+            margin-right: 12px;
+            width: 20px;
+            font-size: 1.2rem;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background: #e6e6e6;
+            margin: 8px 0;
+        }
+
+        /* Mobile toggle button */
+        .nav-toggle {
+            display: none;
+            position: fixed;
+            left: 20px;
+            top: 20px;
+            z-index: 102;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        /* Responsive styles */
+        @media (max-width: 1024px) {
+            .side-nav {
+                transform: translateX(-100%);
+            }
+
+            .side-nav.active {
+                transform: translateX(0);
+            }
+
+            .nav-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .side-nav {
+                width: 240px;
+            }
+        }
+    </style>
+
+    <!-- Mobile toggle button -->
+    <button class="nav-toggle">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <!-- Logo -->
+    <div class="nav-logo">
+        <i class="fab fa-instagram icon"></i>
+    </div>
+
+    <!-- Main Menu -->
+    <div class="nav-menu">
+        <a href="{% url 'home' %}" class="nav-item active">
+            <span class="icon">
+                <i class="fas fa-home"></i>
+            </span>
+            <span class="nav-label">Home</span>
+        </a>
+
+        <a href="{% url 'search_users' %}" class="nav-item">
+            <span class="icon">
+                <i class="fas fa-search"></i>
+            </span>
+            <span class="nav-label">Search</span>
+        </a>
+
+        <a href="#" class="nav-item">
+            <span class="icon">
+                <i class="fas fa-compass"></i>
+            </span>
+            <span class="nav-label">Explore</span>
+        </a>
+
+        <a href="#" class="nav-item">
+            <span class="icon">
+                <i class="fas fa-film"></i>
+            </span>
+            <span class="nav-label">Reels</span>
+        </a>
+
+     <a href="{% url 'inbox' %}" class="nav-item" style="display: inline-flex; align-items: center; position: relative;">
+    <span class="icon">
+        <i class="fas fa-paper-plane"></i>
+    </span>
+    <span class="nav-label" style="margin-right: 8px;">Messages</span>
+    {% if directs_count %}
+    <span class="tag is-danger is-rounded" style="font-size: 0.7rem; margin-left: 4px;">
+        {{ directs_count }}
+    </span>
+    {% endif %}
+</a>
+
+<a href="{% url 'notifications-list' %}" class="nav-item is-flex is-align-items-center">
+    <span class="icon is-relative">
+        <i class="fas fa-bell"></i>
+        {% if unread_notifications_count > 0 %}
+        <span class="tag is-danger is-rounded is-small" 
+              style="position: absolute; top: 0; right: 0; transform: translate(50%, -50%);">
+            {{ unread_notifications_count }}
+        </span>
+        {% endif %}
+    </span>
+    <span class="nav-label ml-2">Notifications</span>
+</a>
+
+        <a href="{% url 'new_post' %}" class="nav-item">
+            <span class="icon">
+                <i class="fas fa-plus-square"></i>
+            </span>
+            <span class="nav-label">Create</span>
+        </a>
+
+        {% if user.is_authenticated %}
+        <!-- Profile Section -->
+        <div class="nav-profile">
+             {% if request.user.profile.picture %}
+    <img src="{{ request.user.profile.picture.url }}" 
+         class="is-rounded" 
+         alt="{{ request.user.username }}'s profile picture"
+         width="50" 
+         height="50" style="border-radius: 50%; border: 1px solid #e6e6e6;">
+{% else %}
+    <img src="https://ui-avatars.com/api/?name={{ request.user.username }}&background=random&size=50" 
+         class="is-rounded" 
+         alt="Default profile picture"
+         width="50"
+         height="50">
+{% endif %}
+            <span class="nav-label"> <strong>Profile</strong></span>
+            
+            <!-- Profile Dropdown -->
+            <div class="nav-profile-dropdown">
+                <a href="{% url 'profile' request.user.username %}" class="dropdown-item">
+                    <i class="fas fa-user icon"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="{% url 'favorites_lists' %}" class="dropdown-item">
+                    <i class="fas fa-bookmark icon"></i>
+                    <span>Saved</span>
+                </a>
+                <a href="{% url 'new_story' %}" class="dropdown-item">
+                    <i class="fas fa-camera icon"></i>
+                    <span>Create Story</span>
+                </a>
+                <div class="dropdown-divider"></div>
+                <a href="{% url 'logout' %}" class="dropdown-item">
+                    <i class="fas fa-sign-out-alt icon"></i>
+                    <span>Log Out</span>
+                </a>
+            </div>
+        </div>
+        {% else %}
+        <!-- Auth Buttons -->
+        <div class="nav-auth" style="margin-top: auto; padding: 12px;">
+            <a href="{% url 'login' %}" class="button is-fullwidth is-light" style="margin-bottom: 8px;">
+                Log In
+            </a>
+            <a href="{% url 'signup' %}" class="button is-fullwidth is-primary">
+                Sign Up
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</nav>
+
+<!-- Main Content Area -->
+<main class="main-content" style="margin-left: 275px; padding: 20px;">
+    <!-- Your page content goes here -->
+</main>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Mobile toggle functionality
+        const navToggle = document.querySelector('.nav-toggle');
+        const sideNav = document.querySelector('.side-nav');
+        
+        navToggle.addEventListener('click', () => {
+            sideNav.classList.toggle('active');
+        });
+
+        // Close nav when clicking outside on mobile
+        document.addEventListener('click', (e) => {
+            if (window.innerWidth <= 1024) {
+                if (!sideNav.contains(e.target) && e.target !== navToggle) {
+                    sideNav.classList.remove('active');
+                }
+            }
+        });
+
+        // Profile dropdown functionality
+        const navProfile = document.querySelector('.nav-profile');
+        if (navProfile) {
+            navProfile.addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.querySelector('.nav-profile-dropdown').classList.toggle('active');
+            });
+        }
+
+        // Close dropdown when clicking elsewhere
+        document.addEventListener('click', () => {
+            const dropdown = document.querySelector('.nav-profile-dropdown');
+            if (dropdown) dropdown.classList.remove('active');
+        });
+    });
+</script>

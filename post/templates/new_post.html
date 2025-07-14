@@ -1,0 +1,203 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="columns is-centered">
+    <div class="column is-half">
+        <div class="box has-shadow-light" style="border-radius: 12px; border: none;">
+            <h1 class="title has-text-centered has-text-weight-bold mb-6">Create New Post</h1>
+            
+            <form method="POST" enctype="multipart/form-data" class="post-form">
+                {% csrf_token %}
+                
+                <!-- Media Upload Area -->
+                <div class="field">
+                    <label class="label has-text-weight-semibold has-text-centered">Media (Images/Videos)</label>
+                    <div class="control">
+                        <div class="upload-area" id="upload-area">
+                            <div class="upload-content">
+                                <span class="icon is-large has-text-grey-light">
+                                    <i class="fas fa-cloud-upload-alt fa-3x"></i>
+                                </span>
+                                <p class="has-text-grey">Drag & drop files here or click to browse</p>
+                                <p class="has-text-grey is-size-7 mt-2">
+                                    Supports images (JPG, PNG) and videos (MP4, MOV) - Max 100MB each
+                                </p>
+                            </div>
+                            <input type="file" name="content" id="file-upload" multiple 
+                                   accept="image/*,video/*" style="cursor: pointer;">
+                            <div class="file-names is-hidden" id="file-names-container">
+                                <!-- Will be populated with JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                    {% if form.content.errors %}
+                        <p class="help is-danger has-text-centered">{{ form.content.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Caption Field -->
+                <div class="field">
+                    <label class="label has-text-weight-semibold has-text-centered">Caption</label>
+                    <div class="control">
+                        <textarea name="caption" class="textarea" placeholder="Write your caption here..." required></textarea>
+                    </div>
+                    {% if form.caption.errors %}
+                        <p class="help is-danger has-text-centered">{{ form.caption.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Tags Field -->
+                <div class="field">
+                    <label class="label has-text-weight-semibold has-text-centered">Tags</label>
+                    <div class="control has-icons-left">
+                        <input class="input" type="text" name="tags" placeholder="travel, food, summer">
+                        <span class="icon is-small is-left">
+                            <i class="fas fa-tags"></i>
+                        </span>
+                    </div>
+                    <p class="help has-text-centered">Separate tags with commas (e.g. travel, food, summer)</p>
+                    {% if form.tags.errors %}
+                        <p class="help is-danger has-text-centered">{{ form.tags.errors }}</p>
+                    {% endif %}
+                </div>
+                
+                <!-- Submit Button -->
+                <div class="field mt-6">
+                    <div class="control">
+                        <button type="submit" class="button is-primary is-fullwidth is-medium has-text-weight-semibold">
+                            <span class="icon">
+                                <i class="fas fa-paper-plane"></i>
+                            </span>
+                            <span>Share Post</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Your existing JavaScript remains the same -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('upload-area');
+    const fileInput = uploadArea.querySelector('input[type="file"]');
+    const fileNamesContainer = document.getElementById('file-names-container');
+    
+    // Make sure multiple selection is enabled
+    if (fileInput) {
+        fileInput.multiple = true;
+    }
+    
+    // Handle file selection changes
+    if (fileInput) {
+        fileInput.onchange = function() {
+            fileNamesContainer.innerHTML = '';
+            if (this.files.length > 0) {
+                fileNamesContainer.classList.remove('is-hidden');
+                uploadArea.classList.add('has-file');
+                
+                // Display each selected file with type indicator
+                Array.from(this.files).forEach(file => {
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2); // MB
+                    const isVideo = file.type.startsWith('video/');
+                    
+                    const fileElement = document.createElement('div');
+                    fileElement.className = 'file-name mb-2';
+                    fileElement.innerHTML = `
+                        <span class="icon">
+                            <i class="${isVideo ? 'fas fa-video' : 'fas fa-image'}"></i>
+                        </span>
+                        <span class="file-name-text">${file.name}</span>
+                        <span class="tag is-light is-rounded">${fileSize}MB</span>
+                    `;
+                    fileNamesContainer.appendChild(fileElement);
+                });
+            } else {
+                fileNamesContainer.classList.add('is-hidden');
+                uploadArea.classList.remove('has-file');
+            }
+        };
+    }
+    
+    // Drag and drop functionality
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, preventDefaults, false);
+    });
+    
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+    
+    ['dragenter', 'dragover'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, highlight, false);
+    });
+    
+    ['dragleave', 'drop'].forEach(eventName => {
+        uploadArea.addEventListener(eventName, unhighlight, false);
+    });
+    
+    function highlight() {
+        uploadArea.classList.add('is-dragover');
+    }
+    
+    function unhighlight() {
+        uploadArea.classList.remove('is-dragover');
+    }
+    
+    uploadArea.addEventListener('drop', handleDrop, false);
+    
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if (fileInput) {
+            fileInput.files = files;
+            const event = new Event('change', { bubbles: true });
+            fileInput.dispatchEvent(event);
+        }
+    }
+    
+    // Click anywhere in the upload area to trigger file input
+    uploadArea.addEventListener('click', function(e) {
+        if (e.target.tagName !== 'INPUT' && fileInput) {
+            fileInput.click();
+        }
+    });
+});
+</script>
+
+<style>
+.file-name {
+    display: flex;
+    align-items: center;
+    background: #f0f0f0;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+}
+
+.file-name .icon {
+    margin-right: 0.5rem;
+}
+
+.file-name-text {
+    flex-grow: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-right: 1rem;
+}
+
+.fa-video {
+    color: #ff3860; /* Red for videos */
+}
+
+.fa-image {
+    color: #3273dc; /* Blue for images */
+}
+
+/* Your existing styles remain the same */
+</style>
+{% endblock %}

@@ -1,0 +1,345 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="story-viewer-container">
+    <!-- Progress bars container -->
+    <div class="story-progress-bars">
+        {% for story in stories %}
+        <div class="progress-track">
+            <div class="progress-bar" data-story-id="{{ story.id }}"></div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Story navigation arrows -->
+    <div class="story-nav prev-story">‹</div>
+    <div class="story-nav next-story">›</div>
+    
+    <!-- Close button -->
+    <div class="close-story">×</div>
+    
+    <!-- Stories container -->
+    <div class="stories-slider">
+        {% for story in stories %}
+        <div class="story-slide" data-story-id="{{ story.id }}">
+            <!-- Media container -->
+            <div class="story-media-container">
+                {% if story.content.url|lower|slice:'-4:' == '.mp4' %}
+                <video autoplay muted loop class="story-media">
+                    <source src="{{ story.content.url }}" type="video/mp4">
+                </video>
+                {% else %}
+                <img src="{{ story.content.url }}" alt="Story" class="story-media">
+                {% endif %}
+            </div>
+            
+            <!-- Story header -->
+            <div class="story-header">
+                <div class="user-info">
+                    <img src="{{ story_user.profile.picture.url|default:'/static/default-profile.png' }}" 
+                         alt="{{ story_user.username }}" class="story-avatar">
+                    <span class="username">{{ story_user.username }}</span>
+                </div>
+                <time class="story-time">{{ story.date_posted|timesince }} ago</time>
+            </div>
+            
+            <!-- Caption and interactions -->
+            <div class="story-footer">
+                <div class="story-caption">{{ story.caption }}</div>
+                <div class="story-actions">
+                 
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+/* Main container */
+.story-viewer-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    background: #000;
+    z-index: 1000;
+    overflow: hidden;
+}
+
+/* Progress bars */
+.story-progress-bars {
+    display: flex;
+    gap: 4px;
+    padding: 12px 8px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 10;
+}
+
+.progress-track {
+    flex: 1;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #fff;
+    transition: width linear;
+}
+
+/* Navigation arrows */
+.story-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    font-size: 32px;
+    cursor: pointer;
+    padding: 20px;
+    z-index: 10;
+    opacity: 0.7;
+    user-select: none;
+}
+
+.story-nav:hover {
+    opacity: 1;
+}
+
+.prev-story {
+    left: 0;
+}
+
+.next-story {
+    right: 0;
+}
+
+/* Close button */
+.close-story {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    z-index: 10;
+    opacity: 0.8;
+}
+
+/* Stories slider */
+.stories-slider {
+    display: flex;
+    height: 100vh;
+    transition: transform 0.3s ease;
+}
+
+.story-slide {
+    min-width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* Media container */
+.story-media-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.story-media {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Story header */
+.story-header {
+    position: absolute;
+    top: 30px;
+    left: 0;
+    right: 0;
+    padding: 0 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 5;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.story-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid #3897f0;
+}
+
+.username {
+    color: white;
+    font-weight: 500;
+}
+
+.story-time {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 14px;
+}
+
+/* Story footer */
+.story-footer {
+    position: absolute;
+    bottom: 30px;
+    left: 0;
+    right: 0;
+    padding: 0 15px;
+    z-index: 5;
+}
+
+.story-caption {
+    color: white;
+    margin-bottom: 15px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.story-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.action-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+
+.action-btn:hover {
+    opacity: 1;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const slider = document.querySelector('.stories-slider');
+    const slides = document.querySelectorAll('.story-slide');
+    const progressBars = document.querySelectorAll('.progress-bar');
+    const prevBtn = document.querySelector('.prev-story');
+    const nextBtn = document.querySelector('.next-story');
+    const closeBtn = document.querySelector('.close-story');
+    
+    let currentSlide = 0;
+    let isPlaying = true;
+    let progressInterval;
+    const storyDuration = 5000; // 5 seconds per story
+    
+    // Initialize
+    goToSlide(currentSlide);
+    startProgress();
+    
+    // Navigation functions
+    function goToSlide(slideIndex) {
+        if (slideIndex < 0 || slideIndex >= slides.length) {
+            // End of stories - close or loop
+            window.location.href = "{% url 'home' %}";
+            return;
+        }
+        
+        currentSlide = slideIndex;
+        slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+        resetProgress();
+        startProgress();
+    }
+    
+    function nextSlide() {
+        goToSlide(currentSlide + 1);
+    }
+    
+    function prevSlide() {
+        goToSlide(currentSlide - 1);
+    }
+    
+    // Progress bar functions
+    function startProgress() {
+        clearInterval(progressInterval);
+        const currentBar = progressBars[currentSlide];
+        let width = 0;
+        
+        progressInterval = setInterval(() => {
+            if (width >= 100) {
+                clearInterval(progressInterval);
+                nextSlide();
+                return;
+            }
+            
+            width += 1;
+            currentBar.style.width = `${width}%`;
+        }, storyDuration / 100);
+    }
+    
+    function resetProgress() {
+        progressBars.forEach(bar => {
+            bar.style.width = '0%';
+        });
+    }
+    
+    // Event listeners
+    nextBtn.addEventListener('click', () => {
+        nextSlide();
+    });
+    
+    prevBtn.addEventListener('click', () => {
+        prevSlide();
+    });
+    
+    closeBtn.addEventListener('click', () => {
+        window.location.href = "{% url 'home' %}";
+    });
+    
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') nextSlide();
+        if (e.key === 'ArrowLeft') prevSlide();
+        if (e.key === 'Escape') window.location.href = "{% url 'home' %}";
+    });
+    
+    // Touch/swipe support
+    let touchStartX = 0;
+    let touchEndX = 0;
+    
+    slider.addEventListener('touchstart', (e) => {
+        touchStartX = e.changedTouches[0].screenX;
+        clearInterval(progressInterval);
+    });
+    
+    slider.addEventListener('touchend', (e) => {
+        touchEndX = e.changedTouches[0].screenX;
+        handleSwipe();
+        startProgress();
+    });
+    
+    function handleSwipe() {
+        const threshold = 50;
+        if (touchEndX < touchStartX - threshold) {
+            nextSlide(); // Swipe left
+        } else if (touchEndX > touchStartX + threshold) {
+            prevSlide(); // Swipe right
+        }
+    }
+});
+</script>
+{% endblock %}
