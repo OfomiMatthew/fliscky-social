@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save, pre_delete, post_delete
 from post.models import Follow
 
-# Create your models here.
+
 
 class Story(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='story_user')

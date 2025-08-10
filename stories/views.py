@@ -10,42 +10,6 @@ from django.contrib.auth.models import User
 
 
 
-
-
-
-
-# @login_required
-# def new_story(request):
-#     user = request.user
-#     if request.method == 'POST':
-#         form = NewStoryForm(request.POST, request.FILES)
-#         if form.is_valid():
-#             files = request.FILES.getlist('content')  # Get list of files
-#             caption = form.cleaned_data.get('caption')
-            
-#             for file in files:
-#                 # Create a new Story instance for each file
-#                 story = Story(
-#                     user=user,
-#                     caption=caption,
-#                     content=file
-#                 )
-#                 story.save()
-                
-#                 # Create StoryStream entries for followers
-#                 followers = Follow.objects.filter(following=user)
-#                 for follower in followers:
-#                     StoryStream.objects.create(
-#                         user=follower.follower,
-#                         following=user,
-#                         date=story.date_posted
-#                     ).story.add(story)
-            
-#             return redirect('home')
-#     else:
-#         form = NewStoryForm()
-#     return render(request, 'new_story.html', {'form': form})
-
 @login_required
 def new_story(request):
     user = request.user

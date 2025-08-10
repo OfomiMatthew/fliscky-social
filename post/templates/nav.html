@@ -165,6 +165,19 @@
                 width: 240px;
             }
         }
+
+         .nav-logo {
+      font-family: 'Pacifico', cursive;
+      font-size: 2rem;
+      color: #ff4d4d;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .nav-logo:hover {
+      transform: scale(1.05);
+    }
     </style>
 
     <!-- Mobile toggle button -->
@@ -173,8 +186,9 @@
     </button>
 
     <!-- Logo -->
-    <div class="nav-logo">
-        <i class="fab fa-instagram icon"></i>
+     <div class="nav-logo">
+      <i class="fas fa-bolt" style="color: #ff4d4d; margin-right: 8px;"></i>
+      Flicksy
     </div>
 
     <!-- Main Menu -->
@@ -193,19 +207,14 @@
             <span class="nav-label">Search</span>
         </a>
 
-        <a href="#" class="nav-item">
+        <a href="{% url 'explore_users' %}" class="nav-item">
             <span class="icon">
                 <i class="fas fa-compass"></i>
             </span>
             <span class="nav-label">Explore</span>
         </a>
 
-        <a href="#" class="nav-item">
-            <span class="icon">
-                <i class="fas fa-film"></i>
-            </span>
-            <span class="nav-label">Reels</span>
-        </a>
+    
 
      <a href="{% url 'inbox' %}" class="nav-item" style="display: inline-flex; align-items: center; position: relative;">
     <span class="icon">
